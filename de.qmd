@@ -1,0 +1,362 @@
+---
+title: "`r params$title`"
+format:
+  html:
+    toc: false
+    css: ["style.css"]
+    mainfont: Theinhardt
+    fontsize: "16px"
+    embed-resources: true
+    page-layout: custom
+    link-external-newwindow: true
+    footnotes-hover: true
+    fig-align: center
+    fig-format: retina
+    fig-dpi: 300
+language:
+  section-title-footnotes: "Fussnoten"
+params:
+  title: "Von Algorithmen zu Anwendungen: die Entwicklung der KI-bezogenen Forschung"
+  lead: "Die vom SNF geförderte KI-bezogene Forschung reicht von maschinellem Lernen und Robotik bis hin zu Gesundheit und Klima. Unsere Analyse KI-bezogener Projekte zeigt, wie sich die Forschungsschwerpunkte seit 2011 verändert haben."
+  publication_date: "2026-10-28 04:00:00"
+  lang: de
+  use_theinhardt: false
+  reg_font_path: ""
+  bold_font_path: ""
+  it_font_path: ""
+  boldit_font_path: ""
+  doi_url: "https://doi.org/10.46446/datastory.research-topic-in-ai-grants"
+  github_url: "https://github.com/snsf-data/datastory_research_topic_in_ai_grants"
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r general-setup}
+#| include: false
+
+# Install snf.datastory package if not available, otherwise load it
+if (!require("snf.datastory")) {
+  if (!require("devtools")) {
+    install.packages("devtools")
+    library(devtools)
+  }
+  install_github("snsf-data/snf.datastory")
+  library(snf.datastory)
+}
+
+# Load packages
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(conflicted)
+library(here)
+library(ggiraph)
+library(showtext)
+library(systemfonts)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(cli)
+library(quanteda)
+library(stm)
+library(tidyr)
+library(tidyselect)
+library(forcats)
+library(tidytext)
+library(gdtools)
+library(ggplot2)
+library(gt)
+library(snf.datastory)
+
+# Conflict preferences
+conflict_prefer("filter", "dplyr")
+conflict_prefer("get_datastory_theme", "snf.datastory")
+conflict_prefer("get_datastory_scheme", "snf.datastory")
+
+source("R/translations.R")
+source("R/helpers.R")
+source("R/tm_utils.R")
+source("R/read_and_prepare_data.R")
+source("R/make_figures.R")
+
+# Need to register the font to allow its use by ggiraph when creating SVG
+# files.
+if (font_family_exists("Theinhardt")) {
+  font <- "Theinhardt"
+} else {
+  font <- "sans"
+}
+
+# Set the locale for date formatting (Windows)
+Sys.setlocale(
+  "LC_TIME",
+  switch(
+    params$lang,
+    en = "English",
+    de = "German",
+    fr = "French"
+  )
+)
+
+# Knitr hook for local formatting of printed numbers
+knitr::knit_hooks$set(
+  inline = function(x) {
+    if (!is.numeric(x)) {
+      x
+    } else {
+      snf.datastory::print_num(x, params$lang)
+    }
+  }
+)
+
+```
+
+```{r print-header-infos}
+#| results: asis
+
+# Add publication date to header
+cat(format(as.Date(params$publication_date), "%d.%m.%Y"))
+```
+
+**`r params$lead`**
+
+Künstliche Intelligenz (KI) ist heute in der gesamten Forschungslandschaft fest etabliert. Nachdem sie ursprünglich vor allem in der Informatik beheimatet waren, kommen KI-Methoden zunehmend auch in anderen Forschungsgebieten zum Einsatz. Die Anwendungen reichen von der Rekonstruktion medizinischer Bilder über die Sprachanalyse und die Erforschung von Tumoren bis hin zur Klimamodellierung und Entwicklung neuer Materialien. Gleichzeitig treibt die Grundlagenforschung die Methoden und Systeme, auf denen KI beruht, weiter voran.
+
+Die Zahl der vom SNF geförderten Projekte mit KI-Bezug hat sich zwischen 2011 und 2025 mehr als verdreifacht: In unseren grössten Förderinstrumenten stieg sie von 47 auf 187 Projekte pro Jahr (siehe unsere frühere Datengeschichte zu diesem Thema: [Wie viele Forschungsprojekte mit SNF-Beiträgen betreffen künstliche Intelligenz?](https://data.snf.ch/stories/forschung-mit-ki-bezug-de)). Doch womit befassen sich die Forschenden in diesen Projekten? Und wie haben sich ihre Forschungsschwerpunkte in den vergangenen anderthalb Jahrzehnten verändert?
+
+Um diesen Fragen nachzugehen, haben wir mithilfe von Themenmodellierung die Titel, Schlagwörter und Wissenschaftlichen Abstracts (auf Englisch) von 1508 Projekten mit KI-Bezug, die der SNF zwischen 2011 und 2025 gewährt hat, analysiert. Unsere Analyse zeigt die stetig zunehmende Vielfalt der KI-bezogenen Forschung und lässt eine Verschiebung von der Entwicklung von KI-Methoden und -Systemen hin zu Anwendungen in der gesamten Forschungslandschaft erkennen.
+
+### Ein breites Themenspektrum
+
+Mithilfe einer Themenmodellierung (siehe Einzelheiten im Abschnitt «Wie haben wir die Themen identifiziert?» in der Infobox am Ende dieser Datengeschichte) haben wir die 25 am häufigsten vorkommenden Forschungsthemen in Projekten mit KI-Bezug ermittelt. Die Themen umfassen sowohl die Entwicklung von KI-Methoden als auch deren Einsatz in verschiedenen Forschungsgebieten. Sie reichen von neuronalen Netzen, maschinellem Lernen und der Entwicklung von Algorithmen bis hin zu klinischen Prognosen, Klimawandel, Quantenphysik und Textanalyse. Die einzelnen Themen, die in Projekten mit KI-Bezug am häufigsten vorkommen: «Neuronale Netze und maschinelles Lernen», «Klinische Prognosemodelle», «Design von KI-Systemen» und «Materialdesign».
+
+Für die weitere Analyse haben wir die Themen anschliessend in sechs übergeordneten Kategorien zusammengefasst:
+
+- KI-Grundlagenforschung
+- Gesundheit und Biologie
+- Informationstechnologie
+- Physik und Technik
+- Sozialwissenschaften
+- Sprache und Sprachanalyse
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">KI-bezogene Forschung: die häufigsten Themen</div>
+```{r plot-desktop-1}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_1()
+
+```
+::: caption
+Die 25 häufigsten Themen in sechs übergeordneten Kategorien. Der jeweilige Anteil zeigt, wie stark die Themen in allen identifizierten Projekten mit KI-Bezug vertreten sind. Die Prävalenz gibt an, wie stark die Texte der Projekte im Durchschnitt mit den Begriffen zusammenhängen, die die verschiedenen KI-Themen beschreiben.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">KI-bezogene Forschung: die häufigsten Themen</div>
+```{r plot-mobile-1}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_1()
+
+```
+::: caption
+Die 25 häufigsten Themen in sechs übergeordneten Kategorien. Der jeweilige Anteil zeigt, wie stark die Themen in allen identifizierten Projekten mit KI-Bezug vertreten sind. Die Prävalenz gibt an, wie stark die Texte der Projekte im Durchschnitt mit den Begriffen zusammenhängen, die die verschiedenen KI-Themen beschreiben.
+:::
+:::
+:::
+
+Insgesamt ist «Physik und Technik» die am stärksten vertretene Kategorie. Auf sie entfällt rund ein Drittel der Themen in den Projekten mit KI-Bezug. Dazu gehören Themen wie Robotik, Computer Vision, Materialdesign und Quantenphysik. «Gesundheit und Biologie» ist die zweitstärkste Kategorie und umfasst Themen wie klinische Prognosemodelle, Tumormechanismen und -behandlungen sowie die Vorhersage von Proteinstrukturen. Es folgen «Informationstechnologie», «KI-Grundlagenforschung», «Sprache und Sprachanalyse» und «Sozialwissenschaften».
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Prävalenz der Kategorien und Themen in Projekten mit KI-Bezug</div>
+```{r plot-desktop-2}
+#| out-width: "100%"
+#| fig-height: 5
+
+make_desktop_figure_2()
+
+```
+::: caption
+Prävalenz der 25 Themen und 6 Kategorien in allen Projekten mit KI-Bezug, die der SNF zwischen 2011 und 2025 gewährt hat. Die Prävalenz gibt an, wie stark die Texte der Projekte im Durchschnitt mit den Begriffen zusammenhängen, die die verschiedenen KI-Themen und -Kategorien beschreiben.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Prävalenz der Kategorien und Themen in Projekten mit KI-Bezug</div>
+```{r plot-mobile-2}
+#| out-width: "100%"
+#| fig-height: 5
+
+make_mobile_figure_2()
+
+```
+::: caption
+Prävalenz der 25 Themen und 6 Kategorien in allen Projekten mit KI-Bezug, die der SNF zwischen 2011 und 2025 gewährt hat. Die Prävalenz gibt an, wie stark die Texte der Projekte im Durchschnitt mit den Begriffen zusammenhängen, die die verschiedenen KI-Themen und -Kategorien beschreiben.
+:::
+:::
+:::
+
+### Von der Grundlagenforschung zur breiteren Anwendung
+
+Wir haben die Entwicklung der Projekte, bei denen «KI-Grundlagenforschung» die dominante Themenkategorie war, genauer untersucht. Zwischen 2011 und 2025 blieb die Zahl dieser Projekte relativ stabil und lag im Durchschnitt bei rund zehn pro Jahr. Im Vergleich dazu stieg die Gesamtzahl der Projekte mit KI-Bezug von 47 im Jahr 2011 auf 187 im Jahr 2025. Dies zeigt, dass Fortschritte im Bereich der KI in den letzten Jahren verstärkt in andere Forschungsfelder und -themen eingeflossen sind.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Zunehmender Einsatz von KI-Methoden in der Forschung</div>
+```{r plot-desktop-3}
+#| out-width: "100%"
+#| fig-height: 3.5
+
+make_desktop_figure_3()
+
+```
+::: caption
+Entwicklung der Zahl von Projekten mit KI-Bezug, bei denen «KI-Grundlagenforschung» die dominante Themenkategorie waren, im Vergleich zur Entwicklung aller Projekte mit KI-Bezug (einschliesslich der «KI-Grundlagenforschung»).
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Zunehmender Einsatz von KI-Methoden in der Forschung</div>
+```{r plot-mobile-3}
+#| out-width: "100%"
+#| fig-height: 3.5
+
+make_mobile_figure_3()
+
+```
+::: caption
+Entwicklung der Zahl von Projekten mit KI-Bezug, bei denen «KI-Grundlagenforschung» die dominante Themenkategorie waren, im Vergleich zur Entwicklung aller Projekte mit KI-Bezug (einschliesslich der «KI-Grundlagenforschung»).
+:::
+:::
+:::
+
+Auch die am stärksten vertretenen Themen haben sich verändert. Im Zeitraum 2011–2013 konzentrierten sich mehrere der am stärksten vertretenen Themen auf KI-Methoden oder technische Herausforderungen. Dazu gehörten Methoden des maschinellen Lernens, neuronale Netze, Computer Vision, Robotik und Bildrekonstruktion. Diese Themen sind weiterhin wichtig, und ihre Förderung ist in absoluten Zahlen stabil geblieben. Andere Themen haben jedoch an Bedeutung gewonnen. 
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Entwicklung der Rangfolge der sieben dominierenden Themen 2011–2013</div>
+```{r plot-desktop-4}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_4()
+
+```
+::: caption
+Entwicklung der Rangfolge der sieben Themen, die im Zeitraum 2011–2013 am stärksten vertreten waren. Die farbigen Linien heben diese Themen hervor, die grauen Linien die übrigen Themen.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Entwicklung der Rangfolge der sieben dominierenden Themen 2011–2013</div>
+```{r plot-mobile-4}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_4()
+
+```
+::: caption
+Entwicklung der Rangfolge der sieben Themen, die im Zeitraum 2011–2013 am stärksten vertreten waren. Die farbigen Linien heben diese Themen hervor, die grauen Linien die übrigen Themen.
+:::
+:::
+:::
+
+Im Zeitraum 2023–2025 gehörten zunehmend anwendungsorientierte Themen zu den am stärksten vertretenen Themen. Klinische Prognosemodelle, Klimawandel, Materialdesign und Tumoranalysen zählen nun neben neuronalen Netzen und dem Design von KI-Systemen zu den am stärksten vertretenen Themen. Diese Veränderungen weisen auf einen umfassenderen Wandel hin: Während frühere Forschungsprojekte stärker mit der Entwicklung von KI und der Lösung technischer Herausforderungen in Zusammenhang standen, kommen KI-bezogene Ansätze in neueren Projekten zunehmend bei wissenschaftlichen, medizinischen und gesellschaftlichen Fragestellungen zum Einsatz.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Entwicklung der Rangfolge der sieben dominierenden Themen 2023–2025</div>
+```{r plot-desktop-5}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_5()
+
+```
+::: caption
+Entwicklung der Rangfolge der sieben Themen, die im Zeitraum 2023–2025 am stärksten vertreten waren. Die farbigen Linien heben diese Themen hervor, die grauen Linien die übrigen Themen.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Entwicklung der Rangfolge der sieben dominierenden Themen 2023–2025</div>
+```{r plot-mobile-5}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_5()
+
+```
+::: caption
+Entwicklung der Rangfolge der sieben Themen, die im Zeitraum 2023–2025 am stärksten vertreten waren. Die farbigen Linien heben diese Themen hervor, die grauen Linien die übrigen Themen.
+:::
+:::
+:::
+
+### Ein breites Portfolio dank thematisch offener Förderung
+
+Die Ergebnisse zeigen, dass der SNF in allen Forschungsbereichen ein breites Spektrum an KI-bezogener Forschung fördert. Dazu gehören sowohl Arbeiten zur Weiterentwicklung von KI als auch Forschungsprojekte, die KI-bezogene Methoden in den Bereichen Gesundheit, Technik, Klimaforschung, Sozialwissenschaften und Sprachforschung einsetzen.
+
+Die Ergebnisse veranschaulichen, wie die themenoffene Forschungsförderung auf technologische Veränderungen reagieren kann. Forschende können neuen Forschungsfragen nachgehen und dabei neue Techniken und methodische Entwicklungen in ihren jeweiligen Fachgebieten aufgreifen.
+
+Die vom SNF geförderte Forschung mit KI-Bezug hat nicht nur zugenommen, sondern ist auch vielfältiger geworden. Die Analyse deutet darauf hin, dass Entwicklungen im Bereich der KI zunehmend mit Forschungsfragen aus unterschiedlichsten Disziplinen verknüpft sind. Dies verdeutlicht, wie Forschende neue methodische Fortschritte auf Fragestellungen aus der gesamten Forschungslandschaft übertragen und anwenden.
+
+::: info-box
+
+### Welche Projekte haben wir analysiert?
+
+Diese Analyse basiert auf allen englischsprachigen Projekten, die zwischen 2011 und 2025 in der Projekt- und Karriereförderung des SNF gewährt wurden und deren Projektbeginn spätestens der 30. Juni 2026 war. Mithilfe der Keyword-Suche, die für die erste [SNF-Datengeschichte zu Projekten mit KI-Bezug](https://data.snf.ch/stories/forschung-mit-ki-bezug-de) entwickelt wurde, identifizierten wir 1508 Projekte mit KI-Bezug.
+
+### Wie haben wir die Themen identifiziert?
+
+Aus den Titeln, Schlagwörtern und Wissenschaftlichen Abstracts der Projekte mit KI-Bezug erstellten wir einen Textkorpus. Mithilfe von Themenmodellierung identifizierten wir darin wiederkehrende Themen.
+
+Themenmodellierung ist eine Textanalysemethode aus dem Bereich der Verarbeitung natürlicher Sprache (Natural Language Processing, NLP). Sie wird auf einen Textkorpus angewendet, um Gruppen von Wörtern zu identifizieren, die im gesamten Korpus häufig gemeinsam vorkommen und jeweils ein Thema repräsentieren. Das Ergebnis ist ein statistisches Modell, das die Verteilung der Begriffe innerhalb der einzelnen Themen (Thema-Wort-Wahrscheinlichkeit) sowie die Verteilung der Themen innerhalb der einzelnen Texte (Thema-Text-Wahrscheinlichkeit) abbildet.
+
+Die Thema-Wort-Wahrscheinlichkeit gibt an, mit welcher Wahrscheinlichkeit ein Wort bei einem bestimmten Thema in einem Text vorkommt, der diesem Thema zugeordnet ist. Ein Thema lässt sich somit anhand der Wörter mit der höchsten Wahrscheinlichkeit interpretieren. Ein Large Language Model half dabei, die zehn wahrscheinlichsten Wörter jedes Themas zu interpretieren, und schlug jeweils eine Bezeichnung und eine kurze Beschreibung vor. Die Autoren überprüften diese Vorschläge und fassten die 25 Themen zu sechs übergeordneten Kategorien zusammen.
+
+Die Thema-Text-Wahrscheinlichkeit gibt anhand der darin enthaltenen Wörter an, mit welcher Wahrscheinlichkeit ein Text einem bestimmten Thema zugeordnet ist. In dieser Datengeschichte bezeichnen wir dies als «Themenprävalenz». Beträgt die Prävalenz eines bestimmten Themas für einen Text beispielsweise 0,6, kann dies so interpretiert werden, dass sich 60 % des Inhalts auf dieses Thema beziehen.
+
+Die Ergebnisse zeigten, dass von den Modellen mit unterschiedlich vielen Themen (zwischen 5 und 100) ein Modell mit 25 Themen den Textkorpus angemessen abbildete. Dieses Modell wurde ausgewählt, weil es bei den vier Evaluationsmetriken, die für die Auswahl geeigneter Modelle empfohlen werden^[Weston SJ, Shryock I, Light R, Fisher PA. Selecting the Number and Labels of Topics in Topic Modeling: A Tutorial. Advances in Methods and Practices in Psychological Science. 2023; 6(2). DOI: [10.1177/25152459231160105](https://doi.org/10.1177/25152459231160105).], insgesamt die besten Werte erzielte. Das Entscheidungsjahr wurde in das Modell einbezogen, sodass sich Veränderungen der Themenprävalenz im Zeitverlauf untersuchen liessen.
+
+:::
+
+Daten, Text und Code dieser Datengeschichte sind [auf Github verfügbar](`r params$github_url`) und [auf Zenodo archiviert](`r params$doi_url`). <br>DOI: `r str_remove(params$doi_url,"https://doi.org/")`
+
+```{r prevent-internal-snsf-packages}
+#| include: false
+
+# Internal SNSF packages must not be used in data stories, as their
+# pre-processing functions are internal and the corporate design differs from
+# the data portal.
+
+internal_pkg <- c("snfverse", "snf.preprocessing", "snf.plot")
+
+if (any(internal_pkg %in% loadedNamespaces())) {
+  stop(glue(
+    "You must not use internal SNSF packages in data stories.",
+    " Please resort to snf.datastory."
+  ))
+}
+```

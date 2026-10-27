@@ -1,0 +1,3 @@
+Below are the most likely terms of a topic extracted from a topic model. Analyse these terms to infer the underlying concetp.
+
+Topic terms wiht weights into parenthese:

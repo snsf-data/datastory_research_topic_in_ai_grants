@@ -1,0 +1,44 @@
+keyword,Ambiguous
+artificial intellig,FALSE
+automated reasoning,FALSE
+backpropagation,FALSE
+computer vision,FALSE
+data mining,TRUE
+data science,TRUE
+deep learning,FALSE
+expert system,FALSE
+face detection,TRUE
+feature extraction,FALSE
+generative adversarial net,FALSE
+gesture recognition,TRUE
+image classification,FALSE
+image recognition,FALSE
+image segmentation,FALSE
+information retrieval,TRUE
+intelligent machine,FALSE
+kernel machine,FALSE
+knowledge representation,FALSE
+machine intelligence,FALSE
+machine learning,FALSE
+machine translation,FALSE
+meta learning,FALSE
+multilayer perceptron,FALSE
+natural language processing,FALSE
+neural net,TRUE
+object detection,TRUE
+object identification,TRUE
+object recognition,TRUE
+pattern recognition,TRUE
+pose estimation,FALSE
+reinforcement learning,FALSE
+semantic search,FALSE
+semi supervised learning,FALSE
+sentiment analysis,FALSE
+speech recognition,TRUE
+statistical learning,FALSE
+supervised learning,FALSE
+text classification,FALSE
+transfer learning,FALSE
+transformer net,FALSE
+unsupervised learning,FALSE
+voice recognition,TRUE

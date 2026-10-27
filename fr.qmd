@@ -1,0 +1,350 @@
+---
+title: "`r params$title`"
+format:
+  html:
+    toc: false
+    css: ["style.css"]
+    mainfont: Theinhardt
+    fontsize: "16px"
+    embed-resources: true
+    page-layout: custom
+    link-external-newwindow: true
+    footnotes-hover: true
+    fig-align: center
+    fig-format: retina
+    fig-dpi: 300
+language:
+  section-title-footnotes: "Notes de bas de page"
+params:
+  title: "Des algorithmes aux applications : l’évolution de la recherche liée à l’IA"
+  lead: "Robotique, santé, climat ou matériaux, la recherche liée à l’IA investit un nombre croissant de domaines. Une analyse des projets soutenus par le FNS retrace l’évolution des grandes tendances dans la recherche depuis 2011."
+  publication_date: "2026-10-28 04:00:00"
+  lang: fr
+  use_theinhardt: false
+  reg_font_path: ""
+  bold_font_path: ""
+  it_font_path: ""
+  boldit_font_path: ""
+  doi_url: "https://doi.org/10.46446/datastory.research-topic-in-ai-grants"
+  github_url: "https://github.com/snsf-data/datastory_research_topic_in_ai_grants"
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r general-setup}
+#| include: false
+
+# Install snf.datastory package if not available, otherwise load it
+if (!require("snf.datastory")) {
+  if (!require("devtools")) {
+    install.packages("devtools")
+    library(devtools)
+  }
+  install_github("snsf-data/snf.datastory")
+  library(snf.datastory)
+}
+
+# Load packages
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(conflicted)
+library(here)
+library(ggiraph)
+library(showtext)
+library(systemfonts)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(cli)
+library(quanteda)
+library(stm)
+library(tidyr)
+library(tidyselect)
+library(forcats)
+library(tidytext)
+library(gdtools)
+library(ggplot2)
+library(gt)
+library(snf.datastory)
+
+# Conflict preferences
+conflict_prefer("filter", "dplyr")
+conflict_prefer("get_datastory_theme", "snf.datastory")
+conflict_prefer("get_datastory_scheme", "snf.datastory")
+
+source("R/translations.R")
+source("R/helpers.R")
+source("R/tm_utils.R")
+source("R/read_and_prepare_data.R")
+source("R/make_figures.R")
+
+# Need to register the font to allow its use by ggiraph when creating SVG
+# files.
+if (font_family_exists("Theinhardt")) {
+  font <- "Theinhardt"
+} else {
+  font <- "sans"
+}
+
+# Set the locale for date formatting (Windows)
+Sys.setlocale(
+  "LC_TIME",
+  switch(
+    params$lang,
+    en = "English",
+    de = "German",
+    fr = "French"
+  )
+)
+
+# Knitr hook for local formatting of printed numbers
+knitr::knit_hooks$set(
+  inline = function(x) {
+    if (!is.numeric(x)) {
+      x
+    } else {
+      snf.datastory::print_num(x, params$lang)
+    }
+  }
+)
+
+```
+
+```{r print-header-infos}
+#| results: asis
+
+# Add publication date to header
+cat(format(as.Date(params$publication_date), "%d.%m.%Y"))
+```
+
+**`r params$lead`**
+
+L’intelligence artificielle (IA) occupe désormais une place prépondérante dans le monde de la recherche. Bien qu’issues traditionnellement de l’informatique, les méthodes d’IA sont de plus en plus utilisées dans d’autres domaines. Elles interviennent dans des tâches aussi variées que la reconstruction d’images médicales, l’analyse du langage, l’étude des tumeurs, la modélisation du climat et la conception de nouveaux matériaux. Parallèlement, la recherche fondamentale continue de faire progresser les méthodes et les systèmes sur lesquels repose l’IA.
+
+Le nombre de projets du FNS liés à l’IA a plus que triplé entre 2011 et 2025, passant de 47 à 187 par an dans nos principaux instruments d’encouragement (voir notre précédent récit de données à ce sujet : [Quelle part de projets financés par le FNS ont un lien avec l’intelligence artificielle ?](https://data.snf.ch/stories/recherche-financee-liee-a-l-ia-fr)). Mais sur quoi portent les recherches menées dans le cadre de ces projets ? Et de quelle manière leurs axes de recherche ont-ils évolué au cours des quinze dernières années ?
+
+Pour répondre à ces questions, nous avons utilisé la modélisation thématique (*topic modelling*) afin d’analyser les titres, les résumés et les mots-clés (en anglais) de 1508 projets FNS liés à l’IA, financés entre 2011 et 2025. Notre analyse met en évidence la diversité sans cesse croissante de la recherche en matière d’IA. Elle révèle ainsi que cette recherche, d’abord au cœur du développement de méthodes et de systèmes propres au domaine de l’IA, trouve désormais des applications dans tous les domaines.
+
+### Un large éventail de thèmes
+
+Nous avons utilisé un modèle thématique (voir les détails dans la section « Comment avons-nous identifié les thèmes ? » dans l’encadré à la fin de ce récit) pour déterminer les 25 thèmes de recherche les plus récurrents parmi les projets en lien avec l’IA. Ces thèmes portent à la fois sur le développement des méthodes d’IA et leur utilisation dans différents domaines de recherche. Cela comprend les réseaux neuronaux, l’apprentissage automatique et le développement d’algorithmes aussi bien que la prédiction clinique, le changement climatique, la physique quantique et l’analyse de textes. Les thèmes les plus fréquemment abordés dans les projets liés à l’IA sont les suivants : « Réseaux neuronaux et apprentissage automatique », « Modèles de prédiction clinique », « Conception de systèmes d’IA » et « Conception de matériaux ».
+
+Nous avons ensuite regroupé ces thèmes en six grandes catégories afin d’en tirer une analyse pertinente :
+
+- Recherche fondamentale en IA
+- Santé et biologie
+- Technologies de l’information
+- Physique et ingénierie
+- Sciences sociales
+- Parole et langage
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Recherche liée à l’IA : les thèmes les plus abordés</div>
+```{r plot-desktop-1}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_1()
+
+```
+::: caption
+Les 25 thèmes les plus récurrents sont répartis en six grandes catégories. Pour chaque thème, le pourcentage indique sa prévalence parmi l’ensemble des projets portant sur l’IA. Cette valeur indique en moyenne la proportion qu’occupe ce thème dans l’ensemble des textes analysés.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Recherche liée à l’IA : les thèmes les plus abordés</div>
+```{r plot-mobile-1}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_1()
+
+```
+::: caption
+Les 25 thèmes les plus récurrents sont répartis en six grandes catégories. Pour chaque thème, le pourcentage indique sa prévalence parmi l’ensemble des projets portant sur l’IA. Cette valeur indique en moyenne la proportion qu’occupe ce thème dans l’ensemble des textes analysés.
+:::
+:::
+:::
+
+Globalement, la catégorie « Physique et ingénierie » est la plus répandue, représentant environ un tiers des thèmes abordés dans les projets liés à l’IA. Elle comprend des thèmes tels que la robotique, la vision par ordinateur, la conception de matériaux et la physique quantique. La catégorie « Santé et biologie » arrive en deuxième position. Elle englobe des thèmes tels que les modèles de prédiction clinique, les mécanismes tumoraux et leurs traitements, ainsi que la prédiction de la structure des protéines. Viennent ensuite les catégories « Technologies de l’information », « Recherche fondamentale en IA », « Parole et langage » et « Sciences sociales ».
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Prévalence des catégories et des thèmes dans les projets liés à l’IA</div>
+```{r plot-desktop-2}
+#| out-width: "100%"
+#| fig-height: 5
+
+make_desktop_figure_2()
+
+```
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Prévalence des catégories et des thèmes dans les projets liés à l’IA</div>
+```{r plot-mobile-2}
+#| out-width: "100%"
+#| fig-height: 5
+
+make_mobile_figure_2()
+
+```
+:::
+:::
+
+### Du développement fondamental à une application à plus large échelle
+
+Nous avons examiné en détail l’évolution des projets dont la catégorie thématique principale était « Recherche fondamentale en IA ». Entre 2011 et 2025, le nombre annuel de projets consacrés à la recherche fondamentale en IA est resté relativement stable (en moyenne une dizaine par an), alors que le nombre total de projets liés à l’IA est passé de 47 à 187. Cette hausse montre que les avancées en IA sont de plus en plus intégrées à d’autres domaines et thèmes de recherche.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">L’IA gagne du terrain dans la recherche</div>
+```{r plot-desktop-3}
+#| out-width: "100%"
+#| fig-height: 3.5
+
+make_desktop_figure_3()
+
+```
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">L’IA gagne du terrain dans la recherche</div>
+```{r plot-mobile-3}
+#| out-width: "100%"
+#| fig-height: 3.5
+
+make_mobile_figure_3()
+
+```
+:::
+:::
+
+Le classement des thèmes les plus représentés a également changé. Entre 2011 et 2013, les recherches portaient surtout sur les méthodes d’IA et les défis d’ingénierie, tels que l’apprentissage automatique, les réseaux neuronaux, la vision par ordinateur, la robotique et la reconstruction d’images. Ces thèmes conservent une place importante et les montants qui leur sont consacrés sont restés stables en valeur absolue. Toutefois, d’autres thèmes occupent progressivement une part plus importante.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Les sept thèmes dominants entre 2011 et 2013 et leur évolution au fil des années</div>
+```{r plot-desktop-4}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_4()
+
+```
+::: caption
+Évolution du classement des sept thèmes les plus fréquents entre 2011 et 2013. Les lignes colorées mettent en évidence ces thèmes ; les lignes grises représentent les autres thèmes.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Les sept thèmes dominants entre 2011 et 2013 et leur évolution au fil des années</div>
+```{r plot-mobile-4}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_4()
+
+```
+::: caption
+Évolution du classement des sept thèmes les plus fréquents entre 2011 et 2013. Les lignes colorées mettent en évidence ces thèmes ; les lignes grises représentent les autres thèmes.
+:::
+:::
+:::
+
+Entre 2023 et 2025, le groupe des thèmes les mieux classés était davantage axés sur les applications de l’IA. Les modèles de prédiction clinique, le changement climatique, la conception de matériaux et l’analyse des tumeurs figurent parmi les thèmes les plus récurrents, avec les réseaux neuronaux et la conception de systèmes d’intelligence artificielle. Ces changements sont le signe d’une évolution plus générale. Alors que les projets antérieurs se focalisaient davantage sur des thèmes liés au développement de l’IA et sur la résolution de défis techniques, les projets plus récents appliquent de plus en plus des approches liées à l’IA à des questions scientifiques, médicales et sociétales.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Les sept thèmes dominants entre 2023 et 2025 et leur évolution au fil du temps</div>
+```{r plot-desktop-5}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_5()
+
+```
+::: caption
+Évolution du classement des sept thèmes les plus fréquents entre 2023 et 2025. Les lignes colorées mettent en évidence ces thèmes ; les lignes grises représentent les autres thèmes.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Les sept thèmes dominants entre 2023 et 2025 et leur évolution au fil du temps</div>
+```{r plot-mobile-5}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_5()
+
+```
+::: caption
+Évolution du classement des sept thèmes les plus fréquents entre 2023 et 2025. Les lignes colorées mettent en évidence ces thèmes ; les lignes grises représentent les autres thèmes.
+:::
+:::
+:::
+
+### Un large portefeuille soutenu par un financement « bottom-up »
+
+Les résultats montrent que le FNS soutient un large éventail de recherches liées à l’IA dans tous les domaines. Cela comprend aussi bien les travaux consacrés au développement de l’IA que les projets qui appliquent des méthodes liées à l’IA dans les domaines de la santé, de l’ingénierie, de la recherche climatique, des sciences sociales et de la recherche linguistique.
+
+L’analyse met en évidence comment l’encouragement de la recherche selon une approche ascendante (bottom-up) peut s’adapter aux évolutions technologiques. Les chercheuses et chercheurs peuvent ainsi ouvrir de nouvelles pistes de recherche en s’appuyant sur les techniques émergentes et les avancées méthodologiques propres à leur domaine.
+
+La recherche liée à l’IA financée par le FNS a non seulement gagné en importance, mais aussi en diversité. L’analyse montre que les avancées en matière d’IA sont appliquées à des questions de recherche dans un nombre croissant de disciplines. Les chercheuses et chercheurs adaptent ainsi les nouvelles méthodes à des problématiques qui concernent l’ensemble du paysage de la recherche.
+
+::: info-box
+
+### Quels projets avons-nous analysés ?
+
+Notre analyse porte sur l’ensemble des projets rédigés en anglais financés entre 2011 et 2025 dans le cadre de l’Encouragement de projets et des instruments de carrière du FNS. La date de début commençait au plus tard le 30 juin 2026. Nous avons utilisé la recherche par mots-clés, mise au point pour le premier [récit de données du FNS consacré aux projets en lien avec l’IA](https://data.snf.ch/stories/recherche-financee-liee-a-l-ia-fr), ce qui nous a permis d’identifier 1508 projets liés à l’IA.
+
+### Comment avons-nous identifié les thèmes ?
+
+Nous avons créé un corpus de textes à partir des titres, des résumés scientifiques et des mots-clés des projets liés à l’IA. Ensuite, nous avons utilisé la modélisation thématique (*topic modelling*) pour identifier les thèmes récurrents dans ce corpus.
+
+La modélisation thématique est une technique d’analyse de texte issue du domaine du traitement du langage naturel. Cette méthode est appliquée à un corpus de textes afin d’identifier des groupes de mots cooccurrents (représentant des thèmes) à travers le corpus. On obtient ainsi un modèle statistique de la répartition des termes au sein de chaque thème (probabilité thème-mot) et de la répartition des thèmes au sein de chaque texte (probabilité thème-texte).
+
+La probabilité thème-mot représente la probabilité qu’un mot, pour un thème donné, apparaisse dans un texte lié à ce thème. On peut ainsi identifier un thème en examinant les mots les plus probables. Un grand modèle de langage (LLM) a été utilisé pour analyser les dix mots les plus susceptibles d’être associés à chaque thème et proposer une étiquette ainsi qu’une brève description. Les auteurs ont examiné ces suggestions et ont regroupé les 25 thèmes en six grandes catégories.
+
+La probabilité thème-texte correspond à la probabilité qu’un texte, sur la base des mots qu’il contient, soit lié à un thème donné. C’est ce que nous avons appelé la « prévalence des thèmes » dans ce récit de données. Par exemple, si un thème donné a une prévalence de 0,6 pour un texte, cela peut être interprété comme signifiant que 60 % du contenu du texte est lié à ce thème.
+
+Les résultats ont montré que, parmi plusieurs modèles comportant un nombre variable de thèmes (de 5 à 100), celui qui en comptait 25 offrait une représentation raisonnable du corpus textuel. Nous avons choisi ce modèle parce qu’il a donné les meilleurs résultats selon les quatre critères d’évaluation qu’il est conseillé de prendre en compte lors de la sélection d’un modèle parmi plusieurs^[Weston SJ, Shryock I, Light R, Fisher PA. Selecting the Number and Labels of Topics in Topic Modeling: A Tutorial. Advances in Methods and Practices in Psychological Science. 2023; 6(2). DOI : [10.1177/25152459231160105](https://doi.org/10.1177/25152459231160105).]. L’année de la décision d’octroi du subside a été intégrée au modèle, ce qui a permis d’étudier l’évolution de la prévalence des thèmes au fil du temps.
+
+:::
+
+Les données, le texte et le code de ce récit de données sont [disponibles sur Github](`r params$github_url`) et [archivés sur Zenodo](`r params$doi_url`). <br>DOI: `r str_remove(params$doi_url, "https://doi.org/")`
+
+```{r prevent-internal-snsf-packages}
+#| include: false
+
+# Internal SNSF packages must not be used in data stories, as their
+# pre-processing functions are internal and the corporate design differs from
+# the data portal.
+
+internal_pkg <- c("snfverse", "snf.preprocessing", "snf.plot")
+
+if (any(internal_pkg %in% loadedNamespaces())) {
+  stop(glue(
+    "You must not use internal SNSF packages in data stories.",
+    " Please resort to snf.datastory."
+  ))
+}
+```

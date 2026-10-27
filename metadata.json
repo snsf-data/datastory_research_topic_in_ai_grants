@@ -1,0 +1,25 @@
+[
+  {
+    "title_en": "From algorithms to applications: the evolution of AI-related research",
+    "title_de": "Von Algorithmen zu Anwendungen: die Entwicklung der KI-bezogenen Forschung",
+    "title_fr": "Des algorithmes aux applications : l’évolution de la recherche liée à l’IA",
+    "author_en": "Manuel Klaus, Long-term Research, SNSF;Simon Gorin, Data Team, SNSF",
+    "author_de": "Manuel Klaus, Langzeitforschung, SNF;Simon Gorin, Data-Team, SNF",
+    "author_fr": "Manuel Klaus, Recherche à long terme, FNS;Simon Gorin, Data Team, FNS",
+    "datastory_category": "standard",
+    "publication_date_en": "2026-10-28 04:00:00",
+    "publication_date_de": "2026-10-28 04:00:00",
+    "publication_date_fr": "2026-10-28 04:00:00",
+    "languages": "en;de;fr",
+    "short_desc_en": "AI-related research funded by the SNSF covers topics ranging from machine learning and robotics to health, climate and materials. Our analysis of AI-related grants shows how research trends have evolved since 2011.",
+    "short_desc_de": "Die vom SNF geförderte KI-bezogene Forschung reicht von maschinellem Lernen und Robotik bis hin zu Gesundheit und Klima. Unsere Analyse KI-bezogener Projekte zeigt, wie sich die Forschungsschwerpunkte seit 2011 verändert haben.",
+    "short_desc_fr": "Robotique, santé, climat ou matériaux, la recherche liée à l’IA investit un nombre croissant de domaines. Une analyse des projets soutenus par le FNS retrace l’évolution des grandes tendances dans la recherche depuis 2011.",
+    "tags": "T80T,T160T,T260T,T290T",
+    "top_story": "false",
+    "github_url": "https://github.com/snsf-data/datastory_research_topic_in_ai_grants",
+    "doi": "https://doi.org/10.46446/datastory.research-topic-in-ai-grants",
+    "name_en": "research-topic-in-ai-grants",
+    "name_de": "themen-in-ki-forschung",
+    "name_fr": "themes-dans-la-recherche-liee-a-l-ia"
+  }
+]

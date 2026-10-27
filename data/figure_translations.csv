@@ -1,0 +1,30 @@
+Figure,en,de,fr
+1,Topic,Thema,Thème
+1,Category,Kategorie,Catégorie
+1,Share,Anteil,Pourcentage
+2,Fundamental AI research,KI-Grundlagenforschung,Recherche fondamentale en IA
+2,Health and biology,Gesundheit und Biologie,Santé et biologie
+2,Information technology,Informationstechnologie,Technologies de l’information
+2,Physics and engineering,Physik und Technik,Physique et ingénierie
+2,Social sciences,Sozialwissenschaften,Sciences sociales
+2,Speech and language,Sprache und Sprachanalyse,Parole et langage
+2,Topic and category prevalence (%),Prävalenz der Themen und Kategorien (%),Prévalence des thèmes et catégories (%)
+2,Topic,Thema,Thème
+2,Prevalence,Prävalenz,Prévalence
+2,Rank across all topics,Rang unter allen Themen,Classement parmi tous les thèmes
+2,Category,Kategorie,Catégorie
+2,Prevalence,Prävalenz,Prévalence
+3,All AI-related,Alle Projekte mit KI-Bezug,Tout thème lié à l'IA
+3,Fundamental AI,KI-Grundlagenforschung,IA fondamentale
+3,Number of grants,Anzahl Projekte,Nombre de projets
+3,Call decision year,Entscheidungsjahr,Année de décision de l'appel à projets
+3,Number of AI-related grants,Anzahl Projekte mit KI-Bezug,Nombre de projets liés à l'IA
+3,Number of fundamental AI research grants,Anzahl Projekte zur KI-Grundlagenforschung,Nombre de projets en recherche fondamentale en IA
+4,Topic,Thema,Thème
+4,Period,Zeitraum,Période
+4,Rank,Rang,Classement
+4,Prevalence,Prävalenz,Prévalence
+5,Topic,Thema,Thème
+5,Period,Zeitraum,Période
+5,Rank,Rang,Classement
+5,Prevalence,Prävalenz,Prévalence

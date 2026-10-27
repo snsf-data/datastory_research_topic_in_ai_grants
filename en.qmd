@@ -1,0 +1,362 @@
+---
+title: "`r params$title`"
+format:
+  html:
+    toc: false
+    css: ["style.css"]
+    mainfont: Theinhardt
+    fontsize: "16px"
+    embed-resources: true
+    page-layout: custom
+    link-external-newwindow: true
+    footnotes-hover: true
+    fig-align: center
+    fig-format: retina
+    fig-dpi: 300
+language:
+  section-title-footnotes: "Footnotes"
+params:
+  title: "From algorithms to applications: the evolution of AI-related research"
+  lead: "AI-related research funded by the SNSF covers topics ranging from machine learning and robotics to health, climate and materials. Our analysis of AI-related grants shows how research trends have evolved since 2011."
+  publication_date: "2026-10-28 04:00:00"
+  lang: en
+  use_theinhardt: false
+  reg_font_path: ""
+  bold_font_path: ""
+  it_font_path: ""
+  boldit_font_path: ""
+  doi_url: "https://doi.org/10.46446/datastory.research-topic-in-ai-grants"
+  github_url: "https://github.com/snsf-data/datastory_research_topic_in_ai_grants"
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r general-setup}
+#| include: false
+
+# Install snf.datastory package if not available, otherwise load it
+if (!require("snf.datastory")) {
+  if (!require("devtools")) {
+    install.packages("devtools")
+    library(devtools)
+  }
+  install_github("snsf-data/snf.datastory")
+  library(snf.datastory)
+}
+
+# Load packages
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(conflicted)
+library(here)
+library(ggiraph)
+library(showtext)
+library(systemfonts)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(cli)
+library(quanteda)
+library(stm)
+library(tidyr)
+library(tidyselect)
+library(forcats)
+library(tidytext)
+library(gdtools)
+library(ggplot2)
+library(gt)
+library(snf.datastory)
+
+# Conflict preferences
+conflict_prefer("filter", "dplyr")
+conflict_prefer("get_datastory_theme", "snf.datastory")
+conflict_prefer("get_datastory_scheme", "snf.datastory")
+
+source("R/translations.R")
+source("R/helpers.R")
+source("R/tm_utils.R")
+source("R/read_and_prepare_data.R")
+source("R/make_figures.R")
+
+# Need to register the font to allow its use by ggiraph when creating SVG
+# files.
+if (font_family_exists("Theinhardt")) {
+  font <- "Theinhardt"
+} else {
+  font <- "sans"
+}
+
+# Set the locale for date formatting (Windows)
+Sys.setlocale(
+  "LC_TIME",
+  switch(
+    params$lang,
+    en = "English",
+    de = "German",
+    fr = "French"
+  )
+)
+
+# Knitr hook for local formatting of printed numbers
+knitr::knit_hooks$set(
+  inline = function(x) {
+    if (!is.numeric(x)) {
+      x
+    } else {
+      snf.datastory::print_num(x, params$lang)
+    }
+  }
+)
+
+```
+
+```{r print-header-infos}
+#| results: asis
+
+# Add publication date to header
+cat(format(as.Date(params$publication_date), "%d.%m.%Y"))
+```
+
+**`r params$lead`**
+
+Artificial intelligence (AI) has become a prominent fixture across the research landscape. While traditionally based in computer science, AI methods have increasingly been adopted in other fields. They have been used for tasks as varied as reconstructing medical images, analysing language, studying tumours, modelling the climate and designing new materials. At the same time, fundamental research continues to advance the methods and systems on which AI depends.
+
+The number of AI-related grants supported by the SNSF more than tripled between 2011 and 2025, rising from 47 to 187 grants per year in our largest funding schemes (see our previous data story on this topic: [How much of SNSF-funded research is related to artificial intelligence?](https://data.snf.ch/stories/ai-related-grants-en)). But what do researchers investigate in these projects? And how has their research focus changed over the last decade and a half?
+
+To explore these questions, we used topic modelling to analyse the titles, abstracts and keywords of 1,508 AI-related grants that the SNSF awarded between 2011 and 2025. Our analysis shows the ever-increasing diversity of AI-related research and indicates a shift from the development of AI methods and systems towards the application of AI across the research landscape.
+
+### A broad range of topics
+
+We used a topic model (see details in the section “How did we identify the topics?” in the info box at the end of this story) to identify the 25 most recurring research topics across the AI-related grants. The topics cover both the development of AI methods and their use in different research fields. They range from neural networks, machine learning and algorithm development to clinical prediction, climate change, quantum physics and text analysis. The individual topics that are most prevalent across grants related to AI are: “Neural network and machine learning”, “Clinical prediction models”, “AI systems design” and “Material design”.
+
+We subsequently organised the topics into six broader categories for meaningful analysis:
+
+- Fundamental AI research
+- Health and biology
+- Information technology
+- Physics and engineering
+- Social sciences
+- Speech and language
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">AI-related research: most recurring topics</div>
+```{r plot-desktop-1}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_1()
+
+```
+::: caption
+The 25 most recurring topics mapped to the six broader categories. The share represents the prevalence of the topics across all identified AI-related grants. The prevalence represents how much, on average, the texts of the grants are related to the terms describing the different AI topics.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">AI-related research: most recurring topics</div>
+```{r plot-mobile-1}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_1()
+
+```
+::: caption
+The 25 most recurring topics mapped to the six broader categories. The share represents the prevalence of the topics across all identified AI-related grants. The prevalence represents how much, on average, the texts of the grants are related to the terms describing the different AI topics.
+:::
+:::
+:::
+
+Overall, “Physics and engineering” is the most prevalent category, accounting for around a third of the topics represented across the AI-related grants. It includes topics like robotics, computer vision, material design and quantum physics. “Health and biology” is the second most prevalent category, including topics such as clinical prediction models, tumour mechanisms and treatments, and protein structure prediction. This category is followed by “Information technology”, “Fundamental AI research”, “Speech and language” and “Social sciences”.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Prevalence of categories and topics across AI-related grants</div>
+```{r plot-desktop-2}
+#| out-width: "100%"
+#| fig-height: 5
+
+make_desktop_figure_2()
+
+```
+::: caption
+Prevalence of the 25 topics and 6 categories across all the AI-related grants that the SNSF awarded between 2011 and 2025. The prevalence represents how much, on average, the texts of the grants are related to the terms describing the different AI topics and categories.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Prevalence of categories and topics across AI-related grants</div>
+```{r plot-mobile-2}
+#| out-width: "100%"
+#| fig-height: 5
+
+make_mobile_figure_2()
+
+```
+::: caption
+Prevalence of the 25 topics and 6 categories across all the AI-related grants that the SNSF awarded between 2011 and 2025. The prevalence represents how much, on average, the texts of the grants are related to the terms describing the different AI topics and categories.
+:::
+:::
+:::
+
+### From fundamental development to wider application
+
+We looked in detail at the evolution of grants with the dominant topic category “Fundamental AI research”. Between 2011 and 2025, the number of grants per year related to fundamental AI research has remained relatively stable (on average around 10 grants per year). In comparison, the number of AI-related grants grew from 47 in 2011 to 187 in 2025. This indicates a greater incorporation of the advancements made in the field of AI into other research fields and topics in recent years.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Increasing adoption of AI methods in research</div>
+```{r plot-desktop-3}
+#| out-width: "100%"
+#| fig-height: 3.5
+
+make_desktop_figure_3()
+
+```
+::: caption
+Evolution of the number AI-related grants where the dominant category of topics is “Fundamental AI research”, overlayed on top of the evolution of all AI-related grants (including “Fundamental AI research”).
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Increasing adoption of AI methods in research</div>
+```{r plot-mobile-3}
+#| out-width: "100%"
+#| fig-height: 3.5
+
+make_mobile_figure_3()
+
+```
+::: caption
+Evolution of the number AI-related grants where the dominant category of topics is “Fundamental AI research”, overlayed on top of the evolution of all AI-related grants (including “Fundamental AI research”).
+:::
+:::
+:::
+
+The top-ranked topics have also changed. During the period 2011–2013, several of the most prevalent topics focused on AI methods or engineering challenges. These include machine learning methods, neural networks, computer vision, robotics and image reconstruction. While these topics remain important and the funding awarded to support these topics has remained consistent in absolute numbers, other topics have become more prevalent. 
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Ranking over time of the seven most dominant topics in 2011–2013</div>
+```{r plot-desktop-4}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_4()
+
+```
+::: caption
+Evolution of the rankings of the seven topics that were most prevalent in 2011–2013. Coloured lines highlight these topics; grey lines represent the remaining topics.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Ranking over time of the seven most dominant topics in 2011–2013</div>
+```{r plot-mobile-4}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_4()
+
+```
+::: caption
+Evolution of the rankings of the seven topics that were most prevalent in 2011–2013. Coloured lines highlight these topics; grey lines represent the remaining topics.
+:::
+:::
+:::
+
+By 2023–2025, the group of top-ranked topics included more application-oriented topics. Clinical prediction models, climate change, material design and tumour analysis feature among the most prevalent topics, alongside neural networks and AI systems design. These changes point to a broader shift. While earlier projects were more strongly associated with topics related to the development of AI and solving engineering challenges, more recent projects increasingly apply AI-related approaches to scientific, medical and societal questions.
+
+::: {.hide-mobile .hide-tablet}
+::: plot-box
+<div class="plot-title">Ranking over time of the seven most dominant topics in 2023–2025</div>
+```{r plot-desktop-5}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_desktop_figure_5()
+
+```
+::: caption
+Evolution of the rankings of the seven topics that were most prevalent in 2023–2025. Coloured lines highlight these topics; grey lines represent the remaining topics.
+:::
+:::
+:::
+
+::: {.hide-desktop}
+::: plot-box
+<div class="plot-title">Ranking over time of the seven most dominant topics in 2023–2025</div>
+```{r plot-mobile-5}
+#| out-width: "100%"
+#| fig-height: 3
+
+make_mobile_figure_5()
+
+```
+::: caption
+Evolution of the rankings of the seven topics that were most prevalent in 2023–2025. Coloured lines highlight these topics; grey lines represent the remaining topics.
+:::
+:::
+:::
+
+### A broad portfolio supported through bottom-up funding
+
+The results show that the SNSF supports a wide range of AI-related research across all research domains. This includes work on the development of AI as well as projects that apply AI-related methods in health, engineering, climate research, the social sciences and language research.
+
+The findings illustrate how bottom-up research funding can respond to technological change. Researchers can pursue new research questions, making use of emerging techniques and new methodological developments in their respective fields.
+
+AI-related research funded by the SNSF has not simply increased, but has also become more diverse. This analysis suggests that developments in AI are increasingly connected to research questions emerging from a wide range of disciplines, reflecting how researchers adapt and apply new methodological advances to questions from across the research landscape.
+
+::: info-box
+
+### Which grants did we analyse?
+
+This analysis is based on all grants written in English submitted to SNSF Project Funding and Career schemes that were awarded between 2011 and 2025, with a start date no later than 30 June 2026. We applied the keyword-based search developed for the first [SNSF data story on AI-related grants](https://data.snf.ch/stories/ai-related-grants-en) to identify 1,508 grants as AI-related.
+
+### How did we identify the topics?
+
+We created a text corpus from the titles, scientific abstracts and keywords of the AI-related grants and used topic modelling to identify recurrent topics in the corpus.
+
+Topic modelling is a text analysis technique from the field of natural language processing. It is applied to a text corpus to identify groups of co-occurring words (representing topics) across the corpus. The result is a statistical model of the distribution of the terms within each topic (topic-word probability) and of the distribution of the topics within each text (topic-text probability).
+
+The topic-word probability represents the likelihood that a word, for a given topic, would appear in a text related to said topic. We can thus interpret a topic by looking at the most likely words. A large language model helped interpret the ten most likely words associated with each topic and suggested a label and short description. The authors reviewed these suggestions and grouped the 25 topics into six broader categories.
+
+The topic-text probability represents the likelihood that a text, based on the words it contains, is related to a given topic. This is what we called topic prevalence in the present data story. For instance, if a given topic has a prevalence of 0.6 for a text, this can be interpreted as 60% of the content is related to that topic.
+
+The results indicated that, across models with different number of topics (from 5 to 100), a model containing 25 topics provided a reasonable representation of the text corpus. This model was chosen because it yielded the most optimal value on the four evaluation metrics suggested to examine when selecting candidate models^[Weston SJ, Shryock I, Light R, Fisher PA. Selecting the Number and Labels of Topics in Topic Modeling: A Tutorial. *Advances in Methods and Practices in Psychological Science*. 2023; 6(2). DOI: [10.1177/25152459231160105](https://doi.org/10.1177/25152459231160105).]. Decision year was included in the model, making it possible to examine changes in topic prevalence over time.
+
+:::
+
+Data, text and code of this data story are [available on Github](`r params$github_url`) and [archived on Zenodo](`r params$doi_url`).<br>DOI: `r str_remove(params$doi_url, "https://doi.org/")`
+
+```{r prevent-internal-snsf-packages}
+#| include: false
+
+# Internal SNSF packages must not be used in data stories, as their
+# pre-processing functions are internal and the corporate design differs from
+# the data portal.
+
+internal_pkg <- c("snfverse", "snf.preprocessing", "snf.plot")
+
+if (any(internal_pkg %in% loadedNamespaces())) {
+  stop(glue(
+    "You must not use internal SNSF packages in data stories.",
+    " Please resort to snf.datastory."
+  ))
+}
+```
